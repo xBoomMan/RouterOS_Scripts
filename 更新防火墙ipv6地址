@@ -1,0 +1,26 @@
+# 主机连接的接口
+:local interfaceLan "lan"
+# 主机的后缀部分
+:local backPrefix "xxxx:xxxx:xxxx:xxxx"
+
+# 获取变更前的前缀-这是个全局变量会自动更新
+:local glastLanPrefix [system/script/environment/get [find name="lastLanPrefix"] value];
+# 获取变更前IPv6地址-这是个全局变量会自动更新
+:local glastIP [system/script/environment/get [find name="lastIP"] value];
+
+# 获取接口上的ipv6地址前缀
+:local lanIpPrefix [ipv6/nd/prefix/get [find interface=$interfaceLan] prefix];
+:if ($glastLanPrefix != $lanIpPrefix ) do={
+    # 去掉前缀上的掩码，拼接后缀
+    :local fullAddress ([:pick $lanIpPrefix 0 [:find $lanIpPrefix ":/"]] . $backPrefix ."/128");
+    
+    # 查找防火墙中目的地址为更新前ip的条目的id（这里如果有多个条目可以使用for循环）
+    :local firewallID [/ipv6 firewall filter find dst-address=$glastIP]; 
+    # 更新防火墙
+    ipv6/firewall/filter/set $firewallID dst-address=$fullAddress;
+    # 更新全局变量
+    :global lastLanPrefix $lanIpPrefix;
+    :global lastIP $fullAddress
+    # 打印日志
+    :log info ("ipv6地址和防火墙已更新：" . $fullAddress);
+}
