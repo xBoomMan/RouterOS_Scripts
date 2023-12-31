@@ -1,0 +1,20 @@
+:local date [/system clock get date]
+:local time [/system clock get time]
+:local bakname ("backup-" . $date)
+:local fullname ($bakname.".backup")
+
+#start backup
+system/backup/save name=$bakname
+:delay 10s;
+# 设置sftp账号密码
+:local username "xxx"
+:local userpass "*********"
+:local hostpath ("sftp://192.168.11.252/".$fullname)
+
+#start upload
+/tool/fetch url=$hostpath src-path=($fullname) user=$username  password=$userpass upload=yes
+:delay 5s
+
+#remove local file
+/file/remove "$fullname"
+:log info ("Backup Task Finished!")
