@@ -1,0 +1,26 @@
+# 此脚本需要自己搭建php服务
+#aliyun Access Key
+:local id "Key_ID"
+:local secret "Secret"
+
+#domain
+:local domain "xxxx.xx"
+:local record "xx"
+
+#PPPoE-out 要更新接口
+:local pppoe "wan"
+
+:local ipaddr [/ipv6/address/get [/ipv6/address/find interface=pppoe-dian and from-pool=ipv6-dian ] address]
+:set ipaddr [:pick $ipaddr 0 [:find $ipaddr "/"]]
+:global aliip
+:if ($ipaddr != $aliip) do={
+:local result [/tool fetch url="http://192.168.11.252:9999/alidns.php?id=$id&secret=$secret&domain=$domain&record=$record&ip=$ipaddr&type=AAAA" as-value output=user];
+:if ($result->"status" = "finished") do={
+:if ($result->"data" = "0") do={
+:set aliip $ipaddr
+:log info "alidns update ok";
+} else={
+:log info "alidns update error";
+}
+}
+}
