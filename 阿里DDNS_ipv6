@@ -1,4 +1,4 @@
-# 此脚本需要自己搭建php服务
+#此脚本需要自己搭建php服务
 #aliyun Access Key
 :local id "Key_ID"
 :local secret "Secret"
