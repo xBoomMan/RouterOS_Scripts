@@ -1,0 +1,19 @@
+#使用对端域名
+:global domain "www.xxxx.com"
+:global ipAddress
+
+#解析对端ip地址
+:local resolvedIP [:resolve $domain]
+
+:if ($resolvedIP != "") do={
+    #如果上次记录的对端ip与当前IP地址不相同则需要更新
+    :if ($ipAddress != $resolvedIP) do={
+        :set ipAddress $resolvedIP
+        :log info "Domain resolved: $domain -> $ipAddress"
+        :log info "Updating WireGuard peer endpoint..."
+        /interface wireguard peer set [find comment="对端名称"] endpoint-address=$ipAddress
+        :log info "WireGuard peer endpoint updated."
+    }
+} else={
+    :log error "Failed to resolve domain: $domain"
+}
